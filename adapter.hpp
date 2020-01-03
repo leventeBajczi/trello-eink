@@ -5,9 +5,11 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
+#include "secrets.h"
 
-const char* ssid = "Router";
-const char* password = "19670227";
+
+const char* ssid = SSID;
+const char* password = PWD;
 
 void connect_wifi()
 {
@@ -27,6 +29,10 @@ class Card
 private:
     const char* text;
     const char* time;
+    const char* Card::base;
+    const char* Card::todo;
+    const char* Card::doing;
+    const char* Card::tail;
 public:
     Card(byte i) :
       text{retrieve_text()},
@@ -144,4 +150,8 @@ public:
  
 };
 const char* Time::connection = "http://worldtimeapi.org/api/timezone/CET";
+const char* Card::base = "https://api.trello.com/1/lists/";
+const char* Card::todo = "5d922c95fed9b07d5396934a";
+const char* Card::doing= "5d924c8a99ef7f3573ee785c";
+const char* Card::tail = "/cards?key="KEY"&token="TOKEN;
 #endif
