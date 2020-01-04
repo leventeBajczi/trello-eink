@@ -2,8 +2,9 @@
 #define GEOMETRY_H
 
 #include "alphabet.h"
+#include "data.hpp"
 
-void draw_outline(byte* data, int x0, int y0, int x1, int y1, bool inverse = false)
+void draw_outline(DataWrapper<SDEF, NDEF> data, int x0, int y0, int x1, int y1, bool inverse = false)
 {
   for(int j = y0; j<=y1; ++j)
     {
@@ -33,7 +34,7 @@ void draw_outline(byte* data, int x0, int y0, int x1, int y1, bool inverse = fal
   }
 }
 
-void draw_textbox(byte* data, const char* str, int x0, int y0, int x1, int y1, bool inverse = false, bool outline = false, int size = 1, int spacing_horizontal = 2, int spacing_vertical = 2, int padding_left = 2, int padding_right = 2, int padding_top = 2, int padding_bottom = 2)
+void draw_textbox(DataWrapper<SDEF, NDEF> data, const char* str, int x0, int y0, int x1, int y1, bool inverse = false, bool outline = false, int size = 1, int spacing_horizontal = 2, int spacing_vertical = 2, int padding_left = 2, int padding_right = 2, int padding_top = 2, int padding_bottom = 2)
 {
   int offset_x = x0+padding_left;
   int offset_y = y0+padding_top;
@@ -56,6 +57,8 @@ void draw_textbox(byte* data, const char* str, int x0, int y0, int x1, int y1, b
     }
     help[0] = str[i];
     struct character* _char = get_data(help);
+    help[0] = '?';
+    if(!_char) _char = get_data(help);
     for(int i = 0; i < (_char -> data_length); ++i) {
       if(inverse)
         for(int s1 = 0; s1 < size; ++s1)
@@ -79,7 +82,7 @@ void draw_textbox(byte* data, const char* str, int x0, int y0, int x1, int y1, b
   if(outline) draw_outline(data, x0, y0, x1, y1, !inverse);
 }
 
-void draw_rectangle(byte* data, int x0, int y0, int x1, int y1, bool inverse = false, bool outline = false)
+void draw_rectangle(DataWrapper<SDEF, NDEF> data, int x0, int y0, int x1, int y1, bool inverse = false, bool outline = false)
 {
   for(int i = x0; i<=x1; ++i)
   {
@@ -94,7 +97,7 @@ void draw_rectangle(byte* data, int x0, int y0, int x1, int y1, bool inverse = f
   if(outline) draw_outline(data, x0, y0, x1, y1, !inverse);
 }
 
-void draw_circle(byte* data, int x, int y, int r, bool inverse = false)
+void draw_circle(DataWrapper<SDEF, NDEF> data, int x, int y, int r, bool inverse = false)
 {
   for(int i = x-r+1; i<=x+r-1; ++i)
   {

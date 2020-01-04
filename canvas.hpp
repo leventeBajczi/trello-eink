@@ -1,17 +1,10 @@
-#ifndef GEOMETRY_HPP
-#define GEOMETRY_HPP
+#ifndef CANVAS_HPP
+#define CANVAS_HPP
 
 #include "adapter.hpp"
 #include "geometry.h"
 #include "epd.h"
-
-template<typename T>
-void swap(T& a, T&b)
-{
-  T tmp = a;
-  a = std::move(b);
-  b = std::move(tmp);
-}
+#include "data.hpp"
 
 
 class StatusBar
@@ -20,31 +13,33 @@ private:
     const Time lastRefreshed;
     const Battery battery;
 public:
-    void black(byte* black) const{
+    void black(DataWrapper<SDEF, NDEF> black) const{
         draw_rectangle(black, 0, 0, 399, 22, true, true);
         draw_textbox(black, lastRefreshed, 0, 2, 350, 22);
         draw_textbox(black, battery, 358, 2, 398, 22);
     } 
-    void yellow(byte* yellow) const {} 
+    void yellow(DataWrapper<SDEF, NDEF> yellow) const {} 
 
 };
 
 class ToDo
 {
 private:
-    const Card cards[3] = {1, 2, 3};
+    const CardList cardList;
 public:
-    ToDo(){}
-    void black(byte* black) const {
+    ToDo() : 
+        cardList(true)
+    {}
+    void black(DataWrapper<SDEF, NDEF> black) const {
         draw_rectangle(black, 0, 22, 199, 299, true, true);
         draw_textbox(black, "ToDo", 66, 30, 132, 70, false, false, 2);
 
         for(int i = 0; i < 3; ++i)
         {
-            const char* text = cards[i].get_text();
+            const char* text = cardList.get_text(i);
             if(text == NULL) break;
             draw_rectangle(black, 5, 75+75*i, 194, 75+75*i+70);
-            const char* time = cards[i].get_time();
+            const char* time = cardList.get_time(i);
             int length;
             if((length = strlen(time)) == 1)
             {
@@ -59,15 +54,15 @@ public:
         }
 
     } 
-    void yellow(byte* yellow) const {
+    void yellow(DataWrapper<SDEF, NDEF> yellow) const {
 
         for(int i = 0; i < 3; ++i)
         {
-            const char* text = cards[i].get_text();
+            const char* text = cardList.get_text(i);
             if(text == NULL) break;
                 draw_rectangle(yellow, 5, 75+75*i,  194, 75+75*i+70);
                 draw_textbox(yellow, text, 5, 75+75*i, 194, 75+75*i+70, true);
-            const char* time = cards[i].get_time();
+            const char* time = cardList.get_time(i);
             int length;
             if((length = strlen(time)) == 1)
             {
@@ -85,19 +80,21 @@ public:
 class Doing
 {
 private:
-    const Card cards[3] = {1, 2, 3};
+    const CardList cardList;
 public:
-    Doing(){}
-    void black(byte* black) const{
+    Doing() :
+        cardList(false)
+    {}
+    void black(DataWrapper<SDEF, NDEF> black) const{
         draw_rectangle(black, 200, 22, 399, 299, true, true);
         draw_textbox(black, "Doing", 256, 30, 338, 70, false, false, 2);
 
         for(int i = 0; i < 3; ++i)
         {
-            const char* text = cards[i].get_text();
+            const char* text = cardList.get_text(i);
             if(text == NULL) break;
             draw_rectangle(black, 205, 75+75*i, 394, 75+75*i+70);
-            const char* time = cards[i].get_time();
+            const char* time = cardList.get_time(i);
             int length;
             if((length = strlen(time)) == 1)
             {
@@ -112,15 +109,15 @@ public:
         }
 
     } 
-    void yellow(byte* yellow) const{
+    void yellow(DataWrapper<SDEF, NDEF> yellow) const{
 
         for(int i = 0; i < 3; ++i)
         {
-            const char* text = cards[i].get_text();
+            const char* text = cardList.get_text(i);
             if(text == NULL) break;
                 draw_rectangle(yellow, 205, 75+75*i,  394, 75+75*i+70);
                 draw_textbox(yellow, text, 205, 75+75*i, 394, 75+75*i+70, true);
-            const char* time = cards[i].get_time();
+            const char* time = cardList.get_time(i);
             int length;
             if((length = strlen(time)) == 1)
             {
@@ -135,10 +132,11 @@ public:
     } 
 };
 
+
 class Canvas
 {
 private:
-    static byte* data;
+    Data<SDEF, NDEF>* data;
     const StatusBar *statusbar;
     const ToDo *todo;
     const Doing *doing;
@@ -146,7 +144,8 @@ public:
     Canvas() :
       statusbar(new StatusBar{}),
       todo(new ToDo{}),
-      doing(new Doing{})
+      doing(new Doing{}),
+      data(nullptr)
     {
     }
     ~Canvas()
@@ -180,35 +179,37 @@ public:
     
     void draw() {
         EPD_Init_4in2b();
-        
+
+        data = new Data<SDEF, NDEF>;
+        DataWrapper<SDEF, NDEF> dw(data);
         for(int i = 0; i < 400*300/8; ++i)
         {
-            data[i] = 255;
+            (dw)[i] = 255;
         } 
-        statusbar->black(data);
-        todo->black(data);
-        doing->black(data);
+        statusbar->black(dw);
+        todo->black(dw);
+        doing->black(dw);
         for(int i = 0; i < 400*300/8; ++i)
-            EPD_loadA(data[i]);
+            EPD_loadA((dw)[i]);
 
         EPD_SendCommand(0x13);
         delay(2);
 
         for(int i = 0; i < 400*300/8; ++i)
         {
-            data[i] = 255;
+            (dw)[i] = 255;
         }
-        statusbar->yellow(data);
-        todo->yellow(data);
-        doing->yellow(data);
+        statusbar->yellow(dw);
+        todo->yellow(dw);
+        doing->yellow(dw);
         for(int i = 0; i < 400*300/8; ++i)
-            EPD_loadA(data[i]);
+            EPD_loadA((dw)[i]);
 
         EPD_showB();
 
+        delete data;
+
     } 
 };
-
-byte *Canvas::data = new byte[300*400/8];
 
 #endif
