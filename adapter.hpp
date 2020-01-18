@@ -7,23 +7,14 @@
 #include <WiFiClient.h>
 
 #include "secrets.h"
+#include "peap.h"
 #include "data.hpp"
-
-const char* ssid = SSID;
-const char* password = PWD;
 
 
 void connect_wifi()
 {
-  if(WiFi.status() != WL_CONNECTED)
-  {
-    WiFi.hostname("eink");
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-    }
-  }
+  if(WiFi.status() == WL_CONNECTED) return;
+  connectBlock();
 }
 
 struct TimeRequest{
@@ -164,7 +155,7 @@ private:
 public:
     CardList(bool is_todo) :
         cards(nullptr),
-        all_cards(-1)
+        all_cards(0)
     {
         connect_wifi();
         HTTPClient* lists_http = new HTTPClient;

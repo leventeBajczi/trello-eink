@@ -89,7 +89,7 @@ void EPD_WaitUntilIdle()
 {
     //0: busy, 1: idle
     while (digitalRead(BUSY_PIN) == 0)
-        delay(100);
+        delay(1000);
 }
 
 /* Send a one-argument command -----------------------------------------------*/
