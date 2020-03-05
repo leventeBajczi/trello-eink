@@ -10,6 +10,7 @@
 #include "peap.h"
 #include "data.hpp"
 
+#define DISPLAYABLE_CARDS 3
 
 void connect_wifi()
 {
@@ -163,12 +164,14 @@ public:
         short httpCode;
         if((httpCode = lists_http->GET()) == 200)
         {
-            DynamicJsonDocument cardlist(512);
+            JsonArray array;
+            DynamicJsonDocument cardlist(2048);
             deserializeJson(cardlist, lists_http->getString());
             lists_http->end();
             delete lists_http;
-            JsonArray array = cardlist.as<JsonArray>();
+            array = cardlist.as<JsonArray>();
             all_cards = array.size();
+            all_cards = all_cards > DISPLAYABLE_CARDS ? DISPLAYABLE_CARDS : all_cards;
             cards = new Card[all_cards];
             int i = 0;
             for(JsonVariant v : array) {
@@ -176,13 +179,24 @@ public:
                 cards_http->begin(base + cards_start + String{(const char*)v["id"]} + cards_end + tail, "a");
                 if((httpCode = cards_http->GET()) == 200)
                 { 
+                  int j = -1;
                   DynamicJsonDocument cards_doc(512);
                   deserializeJson(cards_doc, cards_http->getString().c_str());
                   cards_http->end();
                   delete cards_http;
-                  cards[i].text = strdup(cards_doc["name"]);
-                  if(!cards_doc["due"].isNull()) cards[i++].time = Time::getInstance()->getDiff(cards_doc["due"]);
-                  else                           cards[i++].time = -1;
+                  if(i<DISPLAYABLE_CARDS) j = i++;
+                  else
+                  {
+                      for(int k = 0; k < DISPLAYABLE_CARDS; ++k)
+                        if(cards[k].time == -1 || (!cards_doc["due"].isNull() && cards[k].time > Time::getInstance()->getDiff(cards_doc["due"]))) j = k;
+                  }
+                  if(j != -1)
+                  {
+                      free(cards[j].text);
+                      cards[j].text = strdup(cards_doc["name"]);
+                      if(!cards_doc["due"].isNull()) cards[j].time = Time::getInstance()->getDiff(cards_doc["due"]);
+                      else                           cards[j].time = -1;
+                  }
                 }
                 else
                 {
@@ -280,8 +294,8 @@ const char* Time::connection = "http://worldtimeapi.org/api/timezone/CET";
 const String CardList::base = "https://api.trello.com/1/";
 const String CardList::lists_start = "lists/";
 const String CardList::cards_start = "cards/";
-const String CardList::todo = "5d922cac78768f6bba3b3aec";
-const String CardList::doing= "5d924c8a99ef7f3573ee785c";
+const String CardList::todo = TODO;
+const String CardList::doing= DOING;
 const String CardList::lists_end = "/cards?fields=id&";
 const String CardList::cards_end = "?fields=name,due&";
 const String CardList::tail = "key="KEY"&token="TOKEN;

@@ -34,6 +34,29 @@ void draw_outline(DataWrapper<SDEF, NDEF> data, int x0, int y0, int x1, int y1, 
   }
 }
 
+
+char transform_utf(char c1, char c2, int* counter)
+{
+    if(c1 < 128) return c1;
+    
+    int i = ((int)c1) << 8;
+    i |= c2;
+    switch(i)   
+    {
+        case 50081: ++*counter; return 'a'; //á
+        case 50089: ++*counter; return 'e'; //é
+        case 50093: ++*counter; return 'i'; //í
+        case 50099:                         //ó
+        case 50102:                         //ö
+        case 50577: ++*counter; return 'o'; //ő
+        case 50106:                         //ú
+        case 50108:                         //ü
+        case 50609: ++*counter; return 'u'; //ű
+        default: return 0;
+    }
+    
+}
+
 void draw_textbox(DataWrapper<SDEF, NDEF> data, const char* str, int x0, int y0, int x1, int y1, bool inverse = false, bool outline = false, int size = 1, int spacing_horizontal = 2, int spacing_vertical = 2, int padding_left = 2, int padding_right = 2, int padding_top = 2, int padding_bottom = 2)
 {
   int offset_x = x0+padding_left;
@@ -55,7 +78,7 @@ void draw_textbox(DataWrapper<SDEF, NDEF> data, const char* str, int x0, int y0,
       offset_y += HEIGHT*size+spacing_vertical;
       continue;
     }
-    help[0] = str[i];
+    help[0] = i < strlen(str) ? transform_utf(str[i], str[i+1], &i) : str[i];
     struct character* _char = get_data(help);
     help[0] = '?';
     if(!_char) _char = get_data(help);
