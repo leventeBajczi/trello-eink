@@ -93,7 +93,7 @@ public:
         short h  = atoi(strtok(NULL,"-T:")) - utc.h;
         short mi = atoi(strtok(NULL,"-T:")) - utc.mi;
         free(datetime);
-        if(y > 0 || m > 0) return 31*24*60;
+        if(mi+(h + d*24)*60 > 31*24*60) return 31*24*60;
         return mi+(h + d*24)*60;
     }
 };
@@ -158,10 +158,12 @@ public:
         cards(nullptr),
         all_cards(0)
     {
+        Serial.println("Connecting to WiFi...");
         connect_wifi();
+        
         HTTPClient* lists_http = new HTTPClient;
         lists_http->begin(base + lists_start + (is_todo ? todo : doing) + lists_end + tail, "a");
-        short httpCode;
+        volatile short httpCode;
         if((httpCode = lists_http->GET()) == 200)
         {
             JsonArray array;
@@ -170,6 +172,7 @@ public:
             lists_http->end();
             delete lists_http;
             array = cardlist.as<JsonArray>();
+            Serial.println(array);
             all_cards = array.size();
             all_cards = all_cards > DISPLAYABLE_CARDS ? DISPLAYABLE_CARDS : all_cards;
             cards = new Card[all_cards];
@@ -184,6 +187,7 @@ public:
                   deserializeJson(cards_doc, cards_http->getString().c_str());
                   cards_http->end();
                   delete cards_http;
+                  Serial.println((const char*)cards_doc["name"]);
                   if(i<DISPLAYABLE_CARDS) j = i++;
                   else
                   {

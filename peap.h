@@ -37,8 +37,11 @@ bool connect() {
 }
 
 void connectBlock(){
-  while(!connect()){ 
-    delay(100);
+  delay(500);
+  while (WiFi.status() != WL_CONNECTED) {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password); 
+    delay(500);
   }
 }
 

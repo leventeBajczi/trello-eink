@@ -72,7 +72,6 @@ public:
 
     bool verify(WiFiClient& client, const char* host) override
     {
-        return true; // NO verification!
         auto wcs = static_cast<axTLS::WiFiClientSecure&>(client);
         return wcs.verify(_fingerprint.c_str(), host);
     }
@@ -234,6 +233,8 @@ bool HTTPClient::begin(String url, String httpsFingerprint)
     DEBUG_HTTPCLIENT("[HTTP-Client][begin] httpsFingerprint: %s\n", httpsFingerprint.c_str());
     return true;
 }
+
+const uint8_t httpsFingerprint[20] = {0xD4, 0xA0, 0x91, 0x0B, 0xF4, 0x71, 0x9D, 0x05, 0xD1, 0xE0, 0xC4, 0x48, 0x8B, 0x90, 0x3F, 0x98, 0x26, 0xF7, 0x07, 0xE6};
 
 
 bool HTTPClient::begin(String url, const uint8_t httpsFingerprint[20])

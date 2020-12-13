@@ -3,11 +3,11 @@
 
 static const char* hostname = "esp-trello";
 // SSID to connect to
-static const char* ssid = "cicAP-IoT";
+static const char* ssid = "cicAP-guest";
 // Username for authentification
 static const char* username = "esp-trello";
 // Password for authentication
-static const char* password = "jcSXA3v!E2nlZeCGf^I78P%Py";
+static const char* password = "19670227";
 // Root certificate of the server
 static const char *ca_cert = R"(-----BEGIN CERTIFICATE-----
 MIIEsTCCA5mgAwIBAgIUfv9LPxYFWyqDRPlLUFDEn8OhpMUwDQYJKoZIhvcNAQEL

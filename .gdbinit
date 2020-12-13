@@ -11,3 +11,4 @@ mem 0x40100000 0x4013ffff rw cache
 mem 0x40140000 0x5fffffff ro cache
 mem 0x60000000 0x60001fff rw
 set serial baud 9600
+file /tmp/arduino_build_595690/trello-eink.ino.elf
